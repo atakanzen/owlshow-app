@@ -3,8 +3,28 @@
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import Input from '@/components/Input';
+import QuestionConfiguration from '@/components/QuestionConfiguration';
+import {
+  useAppDispatch,
+  useAppSelector,
+} from '@/store/hooks';
+import {
+  addQuestion,
+  selectQuestions,
+} from '@/store/slices/question';
+import { MouseEventHandler } from 'react';
 
 export default function Home() {
+  const questions = useAppSelector(selectQuestions);
+  const dispatch = useAppDispatch();
+
+  const handleAddQuestion: MouseEventHandler<
+    HTMLButtonElement
+  > = (e) => {
+    e.preventDefault();
+    dispatch(addQuestion());
+  };
+
   return (
     <main className="flex flex-col items-start gap-y-12 p-24">
       <div className="flex w-full items-center justify-between">
@@ -54,9 +74,37 @@ export default function Home() {
             max: 60,
           }}
         />
+        <Button
+          className="mt-2 self-end"
+          label="Save"
+          onClick={() => alert('not implemented')}
+        />
       </Card>
-      <Card title="Question Settings">
-        <p>question setup here</p>
+      <Card
+        title="Question Settings"
+        actions={[
+          <Button
+            key="Add Question"
+            label="Add Question"
+            onClick={handleAddQuestion}
+          />,
+        ]}
+      >
+        {questions.length >= 1 && (
+          <>
+            {questions.map((q) => (
+              <QuestionConfiguration
+                key={q.id}
+                question={q}
+              />
+            ))}
+            <Button
+              className="mt-2 self-end"
+              label="Save"
+              onClick={() => alert('not implemented')}
+            />
+          </>
+        )}
       </Card>
     </main>
   );
