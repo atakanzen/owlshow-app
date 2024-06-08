@@ -9,13 +9,30 @@ import {
   useAppSelector,
 } from '@/store/hooks';
 import {
+  selectAppSettings,
+  selectAppSettingsError,
+  setNumberOfPlayers,
+  setNumberOfPlayersError,
+  setNumberOfQuestions,
+  setNumberOfQuestionsError,
+  setTimePerQuestion,
+  setTimePerQuestionError,
+} from '@/store/slices/appsettings';
+import {
   addQuestion,
   selectQuestions,
 } from '@/store/slices/question';
+import { appSettingsSchema } from '@/types/appsettings';
 import { MouseEventHandler } from 'react';
 
 export default function Home() {
   const questions = useAppSelector(selectQuestions);
+  const appSettings = useAppSelector(selectAppSettings);
+  const {
+    numberOfPlayersError,
+    numberOfQuestionsError,
+    timePerQuestionError,
+  } = useAppSelector(selectAppSettingsError);
   const dispatch = useAppDispatch();
 
   const handleAddQuestion: MouseEventHandler<
@@ -23,6 +40,33 @@ export default function Home() {
   > = (e) => {
     e.preventDefault();
     dispatch(addQuestion());
+  };
+
+  const handleSaveAppSettings: MouseEventHandler<
+    HTMLButtonElement
+  > = (e) => {
+    e.preventDefault();
+    const appSettingsResult =
+      appSettingsSchema.safeParse(appSettings);
+    if (!appSettingsResult.success) {
+      for (const err of appSettingsResult.error.issues) {
+        switch (err.path[0]) {
+          case 'numberOfPlayers':
+            dispatch(setNumberOfPlayersError(err.message));
+            break;
+          case 'numberOfQuestions':
+            dispatch(
+              setNumberOfQuestionsError(err.message)
+            );
+            break;
+          case 'timePerQuestion':
+            dispatch(setTimePerQuestionError(err.message));
+            break;
+          default:
+            break;
+        }
+      }
+    }
   };
 
   return (
@@ -50,34 +94,54 @@ export default function Home() {
         <Input
           title="Number of players"
           required
+          error={numberOfPlayersError}
           props={{
             type: 'number',
             min: 1,
             max: 8,
+            value: appSettings.numberOfPlayers,
+            onChange: (e) =>
+              dispatch(
+                setNumberOfPlayers(parseInt(e.target.value))
+              ),
           }}
         />
         <Input
           title="Number of questions"
           required
+          error={numberOfQuestionsError}
           props={{
             type: 'number',
             min: 1,
             max: 64,
+            value: appSettings.numberOfQuestions,
+            onChange: (e) =>
+              dispatch(
+                setNumberOfQuestions(
+                  parseInt(e.target.value)
+                )
+              ),
           }}
         />
         <Input
           title="Time per question"
           required
+          error={timePerQuestionError}
           props={{
             type: 'number',
             min: 5,
             max: 60,
+            value: appSettings.timePerQuestion,
+            onChange: (e) =>
+              dispatch(
+                setTimePerQuestion(parseInt(e.target.value))
+              ),
           }}
         />
         <Button
           className="mt-2 self-end"
           label="Save"
-          onClick={() => alert('not implemented')}
+          onClick={handleSaveAppSettings}
         />
       </Card>
       <Card
