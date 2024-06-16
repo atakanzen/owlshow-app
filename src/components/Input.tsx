@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React, {
   DetailedHTMLProps,
   InputHTMLAttributes,
@@ -5,6 +6,7 @@ import React, {
 
 type InputProps = {
   title: string;
+  displayTitle?: boolean;
   required: boolean;
   error?: string;
   props: DetailedHTMLProps<
@@ -16,17 +18,30 @@ type InputProps = {
 const Input = ({
   props,
   title,
+  displayTitle = true,
   required,
   error,
 }: InputProps) => {
   return (
-    <div className="flex w-full flex-col items-start justify-center">
-      <label className="text-lg" htmlFor={title}>
-        {required && (
-          <span className="text-red-500">*</span>
-        )}
-        {title}
-      </label>
+    <div
+      className={classNames(
+        'flex flex-col items-start justify-center',
+        {
+          'w-1/3': props.type !== 'checkbox',
+        }
+      )}
+    >
+      {displayTitle && (
+        <label
+          className="text-lg font-semibold"
+          htmlFor={title}
+        >
+          {required && (
+            <span className="text-red-500">*</span>
+          )}
+          {title}
+        </label>
+      )}
       <input
         name={title}
         className="w-full rounded p-2 dark:bg-slate-500"

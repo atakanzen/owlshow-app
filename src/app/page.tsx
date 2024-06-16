@@ -2,28 +2,50 @@
 
 import Button from '@/components/Button';
 import Card from '@/components/Card';
+import ExportQuestionsDialog from '@/components/ExportQuestionsDialog';
+import ImportQuestionsDialog from '@/components/ImportQuestionsDialog';
 import Input from '@/components/Input';
 import QuestionConfiguration from '@/components/QuestionConfiguration';
+import useModal from '@/hooks/useModal';
 import {
   useAppDispatch,
   useAppSelector,
 } from '@/store/hooks';
 import {
+  resetAppSettings,
   selectAppSettings,
   selectAppSettingsError,
+  setIsSaved,
   setNumberOfPlayers,
   setNumberOfPlayersError,
   setNumberOfQuestions,
   setNumberOfQuestionsError,
+  setPointsPerQuestion,
+  setPointsPerQuestionError,
+  setTimeForSplashScreen,
+  setTimeForSplashScreenError,
   setTimePerQuestion,
   setTimePerQuestionError,
 } from '@/store/slices/appsettings';
 import {
   addQuestion,
+  resetQuestions,
   selectQuestions,
+  setAnswerError,
+  setNumberOfAnswersError,
+  setNumberOfCorrectAnswersError,
+  setQuestionError,
 } from '@/store/slices/question';
 import { appSettingsSchema } from '@/types/appsettings';
-import { MouseEventHandler } from 'react';
+import { questionConfigSchema } from '@/types/question';
+import {
+  ANSWER_MINIMUM_CHARACTERS_ERROR,
+  ANSWER_ONLY_SINGLE_CORRECT_ERROR,
+  QUESTION_MINIMUM_CHARACTERS_ERROR,
+  QUESTION_MINIMUM_NO_OF_ANSWERS_ERROR,
+} from '@/utils/constants';
+import { jsonSerializerReplacer } from '@/utils/json';
+import { MouseEventHandler, useState } from 'react';
 
 export default function Home() {
   const questions = useAppSelector(selectQuestions);
@@ -33,12 +55,25 @@ export default function Home() {
     numberOfQuestionsError,
     timePerQuestionError,
   } = useAppSelector(selectAppSettingsError);
+  const { numberOfQuestions } = useAppSelector(
+    selectAppSettings
+  );
   const dispatch = useAppDispatch();
+  const { modal: exportModal, showModal: showExportModal } =
+    useModal();
+  const { modal: importModal, showModal: showImportModal } =
+    useModal();
 
   const handleAddQuestion: MouseEventHandler<
     HTMLButtonElement
   > = (e) => {
     e.preventDefault();
+    if (questions.length === numberOfQuestions) {
+      alert(
+        'Maximum number of questions have been reached.'
+      );
+      return;
+    }
     dispatch(addQuestion());
   };
 
@@ -49,19 +84,86 @@ export default function Home() {
     const appSettingsResult =
       appSettingsSchema.safeParse(appSettings);
     if (!appSettingsResult.success) {
-      for (const err of appSettingsResult.error.issues) {
-        switch (err.path[0]) {
+      console.log(appSettingsResult.error.issues);
+      for (const issue of appSettingsResult.error.issues) {
+        switch (issue.path[0]) {
           case 'numberOfPlayers':
-            dispatch(setNumberOfPlayersError(err.message));
+            dispatch(
+              setNumberOfPlayersError(issue.message)
+            );
             break;
           case 'numberOfQuestions':
             dispatch(
-              setNumberOfQuestionsError(err.message)
+              setNumberOfQuestionsError(issue.message)
             );
             break;
           case 'timePerQuestion':
-            dispatch(setTimePerQuestionError(err.message));
+            dispatch(
+              setTimePerQuestionError(issue.message)
+            );
             break;
+          case 'pointsPerQuestion':
+            dispatch(
+              setPointsPerQuestionError(issue.message)
+            );
+            break;
+          case 'timeForSplashScreen':
+            dispatch(
+              setTimeForSplashScreenError(issue.message)
+            );
+            break;
+          default:
+            break;
+        }
+      }
+    } else {
+      dispatch(setIsSaved(true));
+    }
+  };
+
+  const handleSaveQuestions: MouseEventHandler<
+    HTMLButtonElement
+  > = (e) => {
+    e.preventDefault();
+    const questionConfigResult =
+      questionConfigSchema.safeParse(questions);
+    if (!questionConfigResult.success) {
+      console.log(questionConfigResult.error.issues);
+      for (const issue of questionConfigResult.error
+        .issues) {
+        switch (issue.message) {
+          case QUESTION_MINIMUM_CHARACTERS_ERROR:
+            dispatch(
+              setQuestionError({
+                questionIndex: issue.path[0] as number,
+                errorMessage: issue.message,
+              })
+            );
+            break;
+          case ANSWER_MINIMUM_CHARACTERS_ERROR:
+            dispatch(
+              setAnswerError({
+                questionIndex: issue.path[0] as number,
+                answerIndex: issue.path[2] as number,
+                errorMessage: issue.message,
+              })
+            );
+            break;
+          case ANSWER_ONLY_SINGLE_CORRECT_ERROR:
+            dispatch(
+              setNumberOfCorrectAnswersError({
+                questionIndex: issue.path[0] as number,
+                errorMessage: issue.message,
+              })
+            );
+            break;
+          case QUESTION_MINIMUM_NO_OF_ANSWERS_ERROR:
+            dispatch(
+              setNumberOfAnswersError({
+                questionIndex: issue.path[0] as number,
+                errorMessage: issue.message,
+              })
+            );
           default:
             break;
         }
@@ -78,15 +180,11 @@ export default function Home() {
         <div className="flex items-center gap-x-2">
           <Button
             label="Reset"
-            onClick={(e) => alert('not implemented yet')}
-          />
-          <Button
-            label="Export"
-            onClick={(e) => alert('not implemented yet')}
-          />
-          <Button
-            label="Import"
-            onClick={(e) => alert('not implemented yet')}
+            onClick={(e) => {
+              dispatch(resetAppSettings());
+              dispatch(resetQuestions());
+              // TODO: If local-storage not integrated with RTK, handle localStorage reset here.
+            }}
           />
         </div>
       </div>
@@ -102,7 +200,7 @@ export default function Home() {
             value: appSettings.numberOfPlayers,
             onChange: (e) =>
               dispatch(
-                setNumberOfPlayers(parseInt(e.target.value))
+                setNumberOfPlayers(e.target.valueAsNumber)
               ),
           }}
         />
@@ -124,7 +222,7 @@ export default function Home() {
           }}
         />
         <Input
-          title="Time per question"
+          title="Time per question (in seconds)"
           required
           error={timePerQuestionError}
           props={{
@@ -134,42 +232,112 @@ export default function Home() {
             value: appSettings.timePerQuestion,
             onChange: (e) =>
               dispatch(
-                setTimePerQuestion(parseInt(e.target.value))
+                setTimePerQuestion(e.target.valueAsNumber)
               ),
           }}
         />
-        <Button
-          className="mt-2 self-end"
-          label="Save"
-          onClick={handleSaveAppSettings}
+        <Input
+          title="Points per question"
+          required
+          error={appSettings.pointsPerQuestionError}
+          props={{
+            type: 'number',
+            min: 1,
+            value: appSettings.pointsPerQuestion,
+            onChange: (e) =>
+              dispatch(
+                setPointsPerQuestion(e.target.valueAsNumber)
+              ),
+          }}
         />
-      </Card>
-      <Card
-        title="Question Settings"
-        actions={[
+        <Input
+          title="Time for splash screen (in seconds)"
+          required
+          error={appSettings.timeForSplashScreenError}
+          props={{
+            type: 'number',
+            min: 1,
+            max: 5,
+            value: appSettings.timeForSplashScreen,
+            onChange: (e) =>
+              dispatch(
+                setTimeForSplashScreen(
+                  e.target.valueAsNumber
+                )
+              ),
+          }}
+        />
+        <div className="mt-2 flex items-center gap-x-2 self-end">
+          {!appSettings.isSaved && (
+            <span>
+              Please save the configuration first to add
+              questions.
+            </span>
+          )}
           <Button
-            key="Add Question"
-            label="Add Question"
-            onClick={handleAddQuestion}
-          />,
-        ]}
-      >
-        {questions.length >= 1 && (
-          <>
-            {questions.map((q) => (
-              <QuestionConfiguration
-                key={q.id}
-                question={q}
-              />
-            ))}
-            <Button
-              className="mt-2 self-end"
-              label="Save"
-              onClick={() => alert('not implemented')}
-            />
-          </>
-        )}
+            label="Save"
+            onClick={handleSaveAppSettings}
+          />
+        </div>
       </Card>
+      {appSettings.isSaved && (
+        <Card
+          title="Questions"
+          actions={[
+            <Button
+              key="Add Question"
+              label="Add Question"
+              onClick={handleAddQuestion}
+            />,
+            <Button
+              key="Export Questions"
+              label="Export Questions"
+              onClick={(e) =>
+                showExportModal(
+                  'Export Questions',
+                  (onClose) => (
+                    <ExportQuestionsDialog
+                      onClose={onClose}
+                    />
+                  )
+                )
+              }
+            />,
+            <Button
+              key="Import Questions"
+              label="Import Questions"
+              onClick={(e) =>
+                showImportModal(
+                  'Import Questions',
+                  (onClose) => (
+                    <ImportQuestionsDialog
+                      onClose={onClose}
+                    />
+                  )
+                )
+              }
+            />,
+          ]}
+        >
+          {questions.length >= 1 && (
+            <>
+              {questions.map((q) => (
+                <QuestionConfiguration
+                  key={q.id}
+                  question={q}
+                />
+              ))}
+              <Button
+                className="mt-2 self-end"
+                label="Save"
+                onClick={handleSaveQuestions}
+              />
+            </>
+          )}
+        </Card>
+      )}
+      {exportModal}
+      {importModal}
     </main>
   );
 }

@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 type CardProps = {
   title: string;
   children: ReactNode;
-  actions?: ReactNode;
+  actions?: ReactNode[];
 };
 
 const Card = ({ children, title, actions }: CardProps) => {
@@ -13,7 +13,11 @@ const Card = ({ children, title, actions }: CardProps) => {
         <span className="text-2xl font-bold">{title}</span>
         {actions && (
           <div className="flex items-center gap-x-2">
-            {actions}
+            {actions.map((action, i) => (
+              <React.Fragment key={i}>
+                {action}
+              </React.Fragment>
+            ))}
           </div>
         )}
       </div>

@@ -13,6 +13,7 @@ const initialState = (): AppSettingsState => ({
   pointsPerQuestion: 5,
   timeForSplashScreen: 2,
   timePerQuestion: 10,
+  isSaved: false,
 });
 
 export const appSettingsSlice = createSlice({
@@ -20,12 +21,16 @@ export const appSettingsSlice = createSlice({
   initialState,
   reducers: {
     resetAppSettings: initialState,
+    setIsSaved: (state, action: PayloadAction<boolean>) => {
+      state.isSaved = action.payload;
+    },
     setNumberOfPlayers: (
       state,
       action: PayloadAction<number>
     ) => {
       state.numberOfPlayers = action.payload;
       state.numberOfPlayersError = undefined;
+      state.isSaved = false;
     },
     setNumberOfPlayersError: (
       state,
@@ -39,6 +44,7 @@ export const appSettingsSlice = createSlice({
     ) => {
       state.numberOfQuestions = action.payload;
       state.numberOfQuestionsError = undefined;
+      state.isSaved = false;
     },
     setNumberOfQuestionsError: (
       state,
@@ -52,12 +58,41 @@ export const appSettingsSlice = createSlice({
     ) => {
       state.timePerQuestion = action.payload;
       state.timePerQuestionError = undefined;
+      state.isSaved = false;
     },
     setTimePerQuestionError: (
       state,
       action: PayloadAction<string>
     ) => {
       state.timePerQuestionError = action.payload;
+    },
+    setPointsPerQuestion: (
+      state,
+      action: PayloadAction<number>
+    ) => {
+      state.pointsPerQuestion = action.payload;
+      state.pointsPerQuestionError = undefined;
+      state.isSaved = false;
+    },
+    setPointsPerQuestionError: (
+      state,
+      action: PayloadAction<string>
+    ) => {
+      state.pointsPerQuestionError = action.payload;
+    },
+    setTimeForSplashScreen: (
+      state,
+      action: PayloadAction<number>
+    ) => {
+      state.timeForSplashScreen = action.payload;
+      state.timeForSplashScreenError = undefined;
+      state.isSaved = false;
+    },
+    setTimeForSplashScreenError: (
+      state,
+      action: PayloadAction<string>
+    ) => {
+      state.timeForSplashScreenError = action.payload;
     },
   },
 });
@@ -67,9 +102,14 @@ export const {
   setNumberOfPlayers,
   setNumberOfQuestions,
   setTimePerQuestion,
+  setTimePerQuestionError,
   setNumberOfPlayersError,
   setNumberOfQuestionsError,
-  setTimePerQuestionError,
+  setIsSaved,
+  setPointsPerQuestion,
+  setPointsPerQuestionError,
+  setTimeForSplashScreen,
+  setTimeForSplashScreenError,
 } = appSettingsSlice.actions;
 
 export const selectAppSettings = (state: RootState) =>
