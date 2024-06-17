@@ -1,5 +1,7 @@
 import React, { MouseEventHandler, useState } from 'react';
 import Button from './Button';
+import { useAppDispatch } from '@/store/hooks';
+import { importQuestions } from '@/store/slices/question';
 
 type ImportQuestionsDialogProps = {
   onClose: () => void;
@@ -8,13 +10,15 @@ type ImportQuestionsDialogProps = {
 const ImportQuestionsDialog = ({
   onClose,
 }: ImportQuestionsDialogProps) => {
+  const dispatch = useAppDispatch();
   const [questionsJSON, setQuestionsJSON] =
     useState<string>('');
   const handleImportButtonClick: MouseEventHandler<
     HTMLButtonElement
   > = (e) => {
     e.preventDefault();
-    alert('not implemented yet.');
+    dispatch(importQuestions(JSON.parse(questionsJSON)));
+    onClose();
   };
 
   return (

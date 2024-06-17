@@ -35,6 +35,8 @@ import {
   setNumberOfAnswersError,
   setNumberOfCorrectAnswersError,
   setQuestionError,
+  setIsSaved as setIsSavedQuestion,
+  selectQuestionIsSaved,
 } from '@/store/slices/question';
 import { appSettingsSchema } from '@/types/appsettings';
 import { questionConfigSchema } from '@/types/question';
@@ -45,10 +47,18 @@ import {
   QUESTION_MINIMUM_NO_OF_ANSWERS_ERROR,
 } from '@/utils/constants';
 import { jsonSerializerReplacer } from '@/utils/json';
-import { MouseEventHandler, useState } from 'react';
+import Link from 'next/link';
+import {
+  MouseEvent,
+  MouseEventHandler,
+  useState,
+} from 'react';
 
 export default function Home() {
   const questions = useAppSelector(selectQuestions);
+  const isSavedQuestion = useAppSelector(
+    selectQuestionIsSaved
+  );
   const appSettings = useAppSelector(selectAppSettings);
   const {
     numberOfPlayersError,
@@ -168,6 +178,8 @@ export default function Home() {
             break;
         }
       }
+    } else {
+      dispatch(setIsSavedQuestion(true));
     }
   };
 
@@ -335,6 +347,14 @@ export default function Home() {
             </>
           )}
         </Card>
+      )}
+      {isSavedQuestion && (
+        <Link
+          className="self-end rounded bg-slate-800 p-4 text-white"
+          href="/show-mode"
+        >
+          Go Show Mode
+        </Link>
       )}
       {exportModal}
       {importModal}

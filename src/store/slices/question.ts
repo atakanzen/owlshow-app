@@ -11,10 +11,12 @@ import { RootState } from '../store';
 import { number } from 'zod';
 
 interface QuestionState {
+  isSaved: boolean;
   questions: Question[];
 }
 
 const initialState = (): QuestionState => ({
+  isSaved: false,
   questions: [],
 });
 
@@ -23,6 +25,16 @@ export const questionSlice = createSlice({
   initialState,
   reducers: {
     resetQuestions: initialState,
+    setIsSaved: (state, action: PayloadAction<boolean>) => {
+      state.isSaved = action.payload;
+    },
+    importQuestions: (
+      state,
+      action: PayloadAction<Question[]>
+    ) => {
+      state.questions = action.payload;
+      state.isSaved = false;
+    },
     addQuestion: (state) => {
       state.questions.push({
         id: crypto.randomUUID(),
@@ -30,6 +42,7 @@ export const questionSlice = createSlice({
         question: '',
         type: 'Single Answer Test',
       });
+      state.isSaved = false;
     },
     removeQuestion: (
       state,
@@ -38,6 +51,7 @@ export const questionSlice = createSlice({
       state.questions = state.questions.filter(
         (q) => q.id !== action.payload
       );
+      state.isSaved = false;
     },
     addAnswerToQuestion: (
       state,
@@ -58,6 +72,7 @@ export const questionSlice = createSlice({
         }
         return q;
       });
+      state.isSaved = false;
     },
     setQuestionError: (
       state,
@@ -86,6 +101,7 @@ export const questionSlice = createSlice({
         }
         return q;
       });
+      state.isSaved = false;
     },
     setNumberOfCorrectAnswersError: (
       state,
@@ -127,6 +143,7 @@ export const questionSlice = createSlice({
         }
         return q;
       });
+      state.isSaved = false;
     },
     setAnswerTitle: (
       state,
@@ -150,6 +167,7 @@ export const questionSlice = createSlice({
         }
         return q;
       });
+      state.isSaved = false;
     },
     setAnswerError: (
       state,
@@ -187,6 +205,7 @@ export const questionSlice = createSlice({
         }
         return q;
       });
+      state.isSaved = false;
     },
     removeAnswer: (
       state,
@@ -204,6 +223,7 @@ export const questionSlice = createSlice({
         }
         return q;
       });
+      state.isSaved = false;
     },
   },
 });
@@ -222,9 +242,14 @@ export const {
   setAnswerError,
   setNumberOfCorrectAnswersError,
   setNumberOfAnswersError,
+  importQuestions,
+  setIsSaved,
 } = questionSlice.actions;
 
 export const selectQuestions = (state: RootState) =>
   state.question.questions;
+
+export const selectQuestionIsSaved = (state: RootState) =>
+  state.question.isSaved;
 
 export default questionSlice.reducer;

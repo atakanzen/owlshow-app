@@ -16,13 +16,13 @@ const ExportQuestionsDialog = ({
   const handleCopyButtonClick: MouseEventHandler<
     HTMLButtonElement
   > = (e) => {
-    // TODO: Improve this.
     e.preventDefault();
     let questionJson =
       document.getElementById('question-json');
     navigator.clipboard.writeText(
       questionJson!.textContent as string
     );
+    onClose();
   };
 
   return (

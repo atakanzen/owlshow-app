@@ -74,6 +74,7 @@ const QuestionConfiguration = ({
                   title: e.target.value,
                 })
               ),
+            value: question.question,
           }}
         />
         <div className="flex flex-col gap-y-2">
@@ -114,6 +115,7 @@ const QuestionConfiguration = ({
                             title: e.target.value,
                           })
                         ),
+                      value: ans.answer,
                     }}
                   />
                   <Input
@@ -132,6 +134,7 @@ const QuestionConfiguration = ({
                             isCorrect: e.target.checked,
                           })
                         ),
+                      checked: ans.correct,
                     }}
                   />
                   <Button
