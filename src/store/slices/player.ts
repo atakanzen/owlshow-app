@@ -24,6 +24,17 @@ export const playersSlice = createSlice({
     ) => {
       state.players = action.payload;
     },
+    setNotCurrent: (
+      state,
+      action: PayloadAction<string>
+    ) => {
+      state.players.map((p) => {
+        if (p.name === action.payload) {
+          p.isCurrent = false;
+        }
+        return p;
+      });
+    },
     setIsCurrent: (
       state,
       action: PayloadAction<string>
@@ -55,7 +66,18 @@ export const playersSlice = createSlice({
   },
 });
 
+export const {
+  resetPlayers,
+  setIsCurrent,
+  setPlayers,
+  setScore,
+  setNotCurrent,
+} = playersSlice.actions;
+
 export const selectPlayers = (state: RootState) =>
   state.players.players;
+
+export const selectCurrentPlayer = (state: RootState) =>
+  state.players.players.find((p) => p.isCurrent);
 
 export default playersSlice.reducer;

@@ -7,6 +7,9 @@ export const jsonSerializerReplacer = (
     case 'numberOfCorrectAnswersError':
     case 'numberOfAnswersError':
     case 'errorMessage':
+    case 'isSelected':
+    case 'isCurrent':
+    case 'isAnswered':
       return undefined;
     default:
       return value;

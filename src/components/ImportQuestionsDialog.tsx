@@ -17,6 +17,10 @@ const ImportQuestionsDialog = ({
     HTMLButtonElement
   > = (e) => {
     e.preventDefault();
+    if (questionsJSON === '') {
+      alert('Paste your questions JSON first!');
+      return;
+    }
     dispatch(importQuestions(JSON.parse(questionsJSON)));
     onClose();
   };

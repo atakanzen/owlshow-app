@@ -41,8 +41,48 @@ export const questionSlice = createSlice({
         answers: [],
         question: '',
         type: 'Single Answer Test',
+        isCurrent: false,
+        isAnswered: false,
       });
       state.isSaved = false;
+    },
+    setQuestionAnswered: (
+      state,
+      action: PayloadAction<string>
+    ) => {
+      state.questions.map((q) => {
+        if (q.id === action.payload) {
+          q.isAnswered = true;
+        }
+        return q;
+      });
+    },
+    setQuestionCurrent: (
+      state,
+      action: PayloadAction<{
+        questionId: string;
+      }>
+    ) => {
+      const { questionId } = action.payload;
+      state.questions.map((q) => {
+        if (q.id === questionId) {
+          q.isCurrent = true;
+        } else {
+          q.isCurrent = false;
+        }
+        return q;
+      });
+    },
+    setQuestionNotCurrent: (
+      state,
+      action: PayloadAction<string>
+    ) => {
+      state.questions.map((q) => {
+        if (q.id === action.payload) {
+          q.isCurrent = false;
+        }
+        return q;
+      });
     },
     removeQuestion: (
       state,
@@ -66,6 +106,7 @@ export const questionSlice = createSlice({
             id: crypto.randomUUID(),
             answer: '',
             correct: false,
+            isSelected: false,
           };
           q.answers.push(answer);
           q.numberOfAnswersError = undefined;
@@ -169,6 +210,24 @@ export const questionSlice = createSlice({
       });
       state.isSaved = false;
     },
+    setAnswerSelected: (
+      state,
+      action: PayloadAction<{
+        questionId: String;
+        answerId: string;
+      }>
+    ) => {
+      const { questionId, answerId } = action.payload;
+      state.questions.map((q) => {
+        if (q.id === questionId) {
+          q.answers.map((a) => {
+            if (a.id === answerId) {
+              a.isSelected = !a.isSelected;
+            }
+          });
+        }
+      });
+    },
     setAnswerError: (
       state,
       action: PayloadAction<{
@@ -244,6 +303,10 @@ export const {
   setNumberOfAnswersError,
   importQuestions,
   setIsSaved,
+  setQuestionCurrent,
+  setAnswerSelected,
+  setQuestionAnswered,
+  setQuestionNotCurrent,
 } = questionSlice.actions;
 
 export const selectQuestions = (state: RootState) =>

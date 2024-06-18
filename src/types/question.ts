@@ -24,6 +24,7 @@ const answerSchema = z.object({
     .trim()
     .min(3, ANSWER_MINIMUM_CHARACTERS_ERROR),
   errorMessage: z.string().optional(),
+  isSelected: z.boolean().optional(),
   correct: z.boolean(),
 });
 
@@ -40,6 +41,8 @@ const questionSchema = z
     titleError: z.string().optional(),
     numberOfCorrectAnswersError: z.string().optional(),
     numberOfAnswersError: z.string().optional(),
+    isCurrent: z.boolean().optional(),
+    isAnswered: z.boolean().optional(),
     answers: z
       .array(answerSchema)
       .min(2, QUESTION_MINIMUM_NO_OF_ANSWERS_ERROR),

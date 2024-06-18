@@ -195,7 +195,6 @@ export default function Home() {
             onClick={(e) => {
               dispatch(resetAppSettings());
               dispatch(resetQuestions());
-              // TODO: If local-storage not integrated with RTK, handle localStorage reset here.
             }}
           />
         </div>
